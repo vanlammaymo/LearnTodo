@@ -1,0 +1,13 @@
+{
+  "Culture": "en",
+  "Texts": {
+    "AppName": "Todo",
+    "Menu:Home": "Home",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+    "Welcome": "Welcome",
+    "Permission:Todos": "Manage Todos",
+    "Permission:Todos.Create": "Create a Todo",
+    "Permission:Todos.Edit": "Edit a Todo",
+    "Permission:Todos.Delete": "Delete a Todo"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "5.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.Account": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.Identity": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "10.4.1",
+      "isInstalled": true,
+      "creationTime": "06/08/2026 17:18:18 +00:00"
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "Todo.Application": {
+      "path": "src/Todo.Application/Todo.Application.abppkg",
+      "folder": "src"
+    },
+    "Todo.Application.Tests": {
+      "path": "test/Todo.Application.Tests/Todo.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "Todo.Domain.Shared": {
+      "path": "src/Todo.Domain.Shared/Todo.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "Todo.Application.Contracts": {
+      "path": "src/Todo.Application.Contracts/Todo.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "Todo.HttpApi": {
+      "path": "src/Todo.HttpApi/Todo.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "Todo.HttpApi.Client": {
+      "path": "src/Todo.HttpApi.Client/Todo.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "Todo.EntityFrameworkCore.Tests": {
+      "path": "test/Todo.EntityFrameworkCore.Tests/Todo.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "Todo.EntityFrameworkCore": {
+      "path": "src/Todo.EntityFrameworkCore/Todo.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "Todo.TestBase": {
+      "path": "test/Todo.TestBase/Todo.TestBase.abppkg",
+      "folder": "test"
+    },
+    "Todo.Domain.Tests": {
+      "path": "test/Todo.Domain.Tests/Todo.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "Todo.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/Todo.HttpApi.Client.ConsoleTestApp/Todo.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "Todo.DbMigrator": {
+      "path": "src/Todo.DbMigrator/Todo.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "Todo.Blazor": {
+      "path": "src/Todo.Blazor/Todo.Blazor.abppkg",
+      "folder": "src"
+    },
+    "Todo.Domain": {
+      "path": "src/Todo.Domain/Todo.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+<Solution>
+    <Configurations>
+        <Platform Name="Any CPU" />
+    </Configurations>
+    <Folder Name="/src/">
+        <Project Path="src/Todo.Domain/Todo.Domain.csproj" />
+        <Project Path="src/Todo.Application/Todo.Application.csproj" />
+        <Project Path="src/Todo.EntityFrameworkCore/Todo.EntityFrameworkCore.csproj" />
+        <Project Path="src/Todo.Domain.Shared/Todo.Domain.Shared.csproj" />
+        <Project Path="src/Todo.Application.Contracts/Todo.Application.Contracts.csproj" />
+        <Project Path="src/Todo.HttpApi/Todo.HttpApi.csproj" />
+        <Project Path="src/Todo.HttpApi.Client/Todo.HttpApi.Client.csproj" />
+        <Project Path="src/Todo.DbMigrator/Todo.DbMigrator.csproj" />
+        <Project Path="src/Todo.Blazor/Todo.Blazor.csproj" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/Todo.Application.Tests/Todo.Application.Tests.csproj" />
+        <Project Path="test/Todo.EntityFrameworkCore.Tests/Todo.EntityFrameworkCore.Tests.csproj" />
+        <Project Path="test/Todo.TestBase/Todo.TestBase.csproj" />
+        <Project Path="test/Todo.Domain.Tests/Todo.Domain.Tests.csproj" />
+        <Project Path="test/Todo.HttpApi.Client.ConsoleTestApp/Todo.HttpApi.Client.ConsoleTestApp.csproj" />
+    </Folder>
+</Solution>
