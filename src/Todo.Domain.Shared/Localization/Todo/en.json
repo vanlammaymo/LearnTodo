@@ -8,6 +8,7 @@
     "Permission:Todos": "Manage Todos",
     "Permission:Todos.Create": "Create a Todo",
     "Permission:Todos.Edit": "Edit a Todo",
-    "Permission:Todos.Delete": "Delete a Todo"
+    "Permission:Todos.Delete": "Delete a Todo",
+    "Permission:Todos.MarkAsDone": "Mark as done"
   }
 }

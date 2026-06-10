@@ -9,25 +9,33 @@ public class TodoItem : AuditedAggregateRoot<Guid>
 
     public string Description { get; protected set; }
 
-    public DateTime? DueDate { get; protected set; }
+    public DateTime DueDate { get; protected set; } = DateTime.Now.AddDays(7);
 
-    public Priority Priority { get; protected set; }
+    public Priority Priority { get; protected set; } = Priority.Medium;
 
-    public bool IsDone { get; protected set; }
+    public bool IsDone { get; protected set; } = false;
 
     protected TodoItem()
     {
 
     }
 
-    public TodoItem(Guid id, string title, string description, bool isDone = false, DateTime? dueDate = null, Priority priority = Priority.Medium) : base(id)
+    public TodoItem(Guid id, string title, string description, DateTime dueDate, bool isDone, Priority priority = Priority.Medium) : base(id)
     {
         Id = id;
         Title = title;
         Description = description;
         IsDone = isDone;
         Priority = priority;
-        dueDate ??= DateTime.Now.AddDays(7);
         DueDate = dueDate;
+    }
+
+    public void Update(string title, string description, DateTime dueDate, bool isDone, Priority priority)
+    {
+        Title = title;
+        Description = description;
+        DueDate = dueDate;
+        Priority = priority;
+        IsDone = isDone;
     }
 }

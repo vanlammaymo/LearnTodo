@@ -6,6 +6,7 @@ using Volo.Abp.Mapperly;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Todo;
 
@@ -16,9 +17,13 @@ namespace Todo;
     typeof(AbpFeatureManagementApplicationModule),
     typeof(AbpIdentityApplicationModule),
     typeof(AbpAccountApplicationModule),
-    typeof(AbpSettingManagementApplicationModule)
+    typeof(AbpSettingManagementApplicationModule),
+    typeof(AbpMapperlyModule)
     )]
 public class TodoApplicationModule : AbpModule
 {
-
+    public override void ConfigureServices(ServiceConfigurationContext context)
+    {
+        context.Services.AddMapperlyObjectMapper<TodoApplicationMappers>();
+    }
 }

@@ -1,11 +1,20 @@
 using System;
-using Todo.Todos;
+using System.ComponentModel.DataAnnotations;
+
 
 public class CreateTodoItemDto
 {
-    public string Title { get; set; }
+    [Required]
+    [MaxLength(256)]
+    public string Title { get; set; } = "Title";
+
+    [Required]
+    [MaxLength(1024)]
+    public string Description { get; set; } = "Description";
+
     public bool IsDone { get; set; }
-    public string Description { get; set; }
-    public Priority Priority { get; set; }
-    public DateTime DueDate { get; set; }
+
+    public string Priority { get; set; } = "Medium";
+
+    public DateTime DueDate { get; set; } = DateTime.Now.AddDays(7);
 }

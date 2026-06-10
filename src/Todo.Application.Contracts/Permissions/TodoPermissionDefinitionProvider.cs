@@ -11,10 +11,12 @@ public class TodoPermissionDefinitionProvider : PermissionDefinitionProvider
     {
         var myGroup = context.AddGroup(TodoPermissions.GroupName);
 
-        var todosPermission = myGroup.AddPermission(TodoPermissions.TodosPermissions.Default, L("Permission:Todos"));
-        todosPermission.AddChild(TodoPermissions.TodosPermissions.Create);
-        todosPermission.AddChild(TodoPermissions.TodosPermissions.Edit);
-        todosPermission.AddChild(TodoPermissions.TodosPermissions.Delete);
+        // myGroup.AddPermission(TodoPermissions.TodosPermissions.Default, L("Permission:Todos"));
+        myGroup.AddPermission(TodoPermissions.TodosPermissions.View, L("Permission:Todos.View"));
+        myGroup.AddPermission(TodoPermissions.TodosPermissions.Create, L("Permission:Todos.Create"));
+        myGroup.AddPermission(TodoPermissions.TodosPermissions.Edit, L("Permission:Todos.Edit"));
+        myGroup.AddPermission(TodoPermissions.TodosPermissions.Delete, L("Permission:Todos.Delete"));
+        myGroup.AddPermission(TodoPermissions.TodosPermissions.MarkAsDone, L("Permission:Todos.CheckAsDone"));
     }
 
     private static LocalizableString L(string name)

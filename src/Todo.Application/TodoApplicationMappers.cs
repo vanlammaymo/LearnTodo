@@ -1,15 +1,13 @@
 using Riok.Mapperly.Abstractions;
+using Todo.Todos;
 using Volo.Abp.Mapperly;
 
 namespace Todo;
 
-/*
- * You can add your own mappings here.
- * [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
- * public partial class TodoApplicationMappers : MapperBase<BookDto, CreateUpdateBookDto>
- * {
- *    public override partial CreateUpdateBookDto Map(BookDto source);
- * 
- *    public override partial void Map(BookDto source, CreateUpdateBookDto destination);
- * }
- */
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+public partial class TodoApplicationMappers : MapperBase<TodoItem, TodoItemDto>
+{
+    public override partial TodoItemDto Map(TodoItem source);
+
+    public override partial void Map(TodoItem source, TodoItemDto destination);
+}

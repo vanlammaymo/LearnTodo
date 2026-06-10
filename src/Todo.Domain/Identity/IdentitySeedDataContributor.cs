@@ -66,10 +66,18 @@ public class IdentitySeedDataContributor : IDataSeedContributor, ITransientDepen
     public async Task SeedPermissionsAsync()
     {
         // Seed permissions for Admin role
-        var allPermissions = _permissionDefinitionManager.GetPermissionsAsync().Result;
+        var allPermissions = await _permissionDefinitionManager.GetPermissionsAsync();
+
         foreach (var permission in allPermissions)
         {
+            if (permission.Providers.Count > 0 && !permission.Providers.Contains(RolePermissionValueProvider.ProviderName))
+            {
+                continue;
+            }
             await _permissionManager.SetForRoleAsync(Roles.Admin, permission.Name, true);
         }
+
+        // Seed permissions for User role
+        // ...
     }
 }
