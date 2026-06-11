@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Todo;
 using Todo.Domain.Services;
+using Todo.Permissions;
 using Todo.Todos;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 
@@ -22,6 +22,7 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
         _todoRepository = todoRepository;
     }
 
+    [Authorize(TodoPermissions.Todos.Create)]
     public async Task<TodoItemDto> CreateAsync(CreateTodoItemDto input)
     {
         Guid currentUserId = CurrentUser.GetId();
@@ -30,7 +31,7 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
             input.Title,
             input.Description,
             input.DueDate,
-            input.IsDone
+            input.Priority
         );
 
         await _todoRepository.InsertAsync(newItem);

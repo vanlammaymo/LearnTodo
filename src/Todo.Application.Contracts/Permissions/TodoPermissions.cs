@@ -2,9 +2,9 @@ namespace Todo.Permissions;
 
 public static class TodoPermissions
 {
-    public const string GroupName = "Todos";
+    public const string GroupName = "Todo";
 
-    public static class TodosPermissions
+    public static class Todos
     {
         public const string Default = GroupName + ".Todos";
         public const string View = Default + ".View";

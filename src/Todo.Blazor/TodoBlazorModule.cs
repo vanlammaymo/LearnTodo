@@ -52,6 +52,8 @@ using Volo.Abp.UI.Navigation;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Studio.Client.AspNetCore;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace Todo.Blazor;
 
@@ -140,7 +142,7 @@ public class TodoBlazorModule : AbpModule
             {
                 options.DisableTransportSecurityRequirement = true;
             });
-            
+
             Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
@@ -160,6 +162,13 @@ public class TodoBlazorModule : AbpModule
         ConfigureBlazorise(context);
         ConfigureRouter(context);
         ConfigureMenu(context);
+
+        Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(
+                new JsonStringEnumConverter()
+            );
+        });
     }
 
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
@@ -172,7 +181,7 @@ public class TodoBlazorModule : AbpModule
             });
         }
     }
-    
+
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
         context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
@@ -279,7 +288,7 @@ public class TodoBlazorModule : AbpModule
             options.MenuContributors.Add(new TodoMenuContributor());
         });
     }
-    
+
 
     private void ConfigureRouter(ServiceConfigurationContext context)
     {

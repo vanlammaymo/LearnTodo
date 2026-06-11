@@ -6,9 +6,12 @@
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome",
     "Permission:Todos": "Manage Todos",
-    "Permission:Todos.Create": "Create a Todo",
-    "Permission:Todos.Edit": "Edit a Todo",
-    "Permission:Todos.Delete": "Delete a Todo",
-    "Permission:Todos.MarkAsDone": "Mark as done"
+    "Permission:Todos.View": "View todo",
+    "Permission:Todos.Create": "Create a todo",
+    "Permission:Todos.Edit": "Edit a todo",
+    "Permission:Todos.Delete": "Delete a todo",
+    "Permission:Todos.MarkAsDone": "Mark as done",
+
+    "TodoError:001": "A todo item with the same title already exists for the current user."
   }
 }

@@ -17,6 +17,7 @@ using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Emailing;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
+using Volo.Abp.Localization.ExceptionHandling;
 
 namespace Todo;
 
@@ -41,6 +42,11 @@ public class TodoDomainModule : AbpModule
         Configure<AbpMultiTenancyOptions>(options =>
         {
             options.IsEnabled = MultiTenancyConsts.IsEnabled;
+        });
+
+        Configure<AbpExceptionLocalizationOptions>(options =>
+        {
+            options.MapCodeNamespace("TodoError", typeof(TodoResource));
         });
 
 

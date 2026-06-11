@@ -7,6 +7,8 @@ using Volo.Abp.PermissionManagement;
 using System.Threading.Tasks;
 using Volo.Abp.Uow;
 using Volo.Abp.Authorization.Permissions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Todo.Identity;
 
@@ -54,13 +56,34 @@ public class IdentitySeedDataContributor : IDataSeedContributor, ITransientDepen
         if (await _roleManager.FindByNameAsync(Roles.User) == null)
         {
             var userRole = new IdentityRole(_guidGenerator.Create(), Roles.User);
+            userRole.IsDefault = true;
+            userRole.IsPublic = true;
             await _roleManager.CreateAsync(userRole);
         }
     }
 
     public async Task SeedUsersAsync()
     {
-        // Seed users here
+        var admins = await _userManager.GetUsersInRoleAsync(Roles.Admin);
+        if (admins.Count <= 0)
+        {
+            IdentityUser admin = new IdentityUser(
+                _guidGenerator.Create(),
+                "admin",
+                "admin@abp.io"
+            );
+            await _userManager.CreateAsync(admin, "AdminPass");
+        }
+        var users = await _userManager.GetUsersInRoleAsync(Roles.User);
+        if (users.Count <= 0)
+        {
+            IdentityUser user = new IdentityUser(
+                _guidGenerator.Create(),
+                "user",
+                "user@abp.io"
+            );
+            await _userManager.CreateAsync(user, "UserPass");
+        }
     }
 
     public async Task SeedPermissionsAsync()
@@ -78,6 +101,17 @@ public class IdentitySeedDataContributor : IDataSeedContributor, ITransientDepen
         }
 
         // Seed permissions for User role
-        // ...
+        var userPermissions = new[]
+        {
+            "Todo.Todos.View",
+            "Todo.Todos.Create",
+            "Todo.Todos.Edit",
+            "Todo.Todos.MarkAsDone"
+        };
+
+        foreach (string permission in userPermissions)
+        {
+            await _permissionManager.SetForRoleAsync(Roles.User, permission, true);
+        }
     }
 }
