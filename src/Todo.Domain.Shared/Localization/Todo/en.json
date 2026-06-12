@@ -12,6 +12,21 @@
     "Permission:Todos.Delete": "Delete a todo",
     "Permission:Todos.MarkAsDone": "Mark as done",
 
-    "TodoError:001": "A todo item with the same title already exists for the current user."
+    "TodoError:001": "A todo item with the same title already exists for the current user.",
+    "TodoError:002": "A todo item does not exist",
+
+    "ValidateMessage:FieldIsRequired": "{0} is required",
+    "ValidateMessage:FieldMaxLengthError": "{0} must not exceed {1} characters",
+    "ValidateMessage:InvalidField": "{0} Invalid Field",
+    "ValidateMessage:InvalidPriority": "Priority is invalid (must be 0, 1, 2 or Low, Medium, High)",
+    "ValidateMessage:DueDateMustBeFuture": "Due date must be future",
+    "ValidateMessage:AtLeastOneFieldRequired": "At least one field required",
+
+    "Enum:Priority:Low": "Low",
+    "Enum:Priority:Medium": "Medium",
+    "Enum:Priority:High": "High",
+    "Enum:Priority:0": "Low",
+    "Enum:Priority:1": "Medium",
+    "Enum:Priority:2": "High"
   }
 }

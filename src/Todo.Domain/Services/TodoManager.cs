@@ -11,12 +11,12 @@ namespace Todo.Domain.Services;
 
 public class TodoManager : DomainService, ITodoManager
 {
-    private readonly IRepository<TodoItem, Guid> _todoRepository;
+    private readonly ITodoItemRepository _todoItemRepository;
     private readonly IGuidGenerator _guidGenerator;
 
-    public TodoManager(IRepository<TodoItem, Guid> todoRepository, IGuidGenerator guidGenerator)
+    public TodoManager(ITodoItemRepository todoItemRepository, IGuidGenerator guidGenerator)
     {
-        _todoRepository = todoRepository;
+        _todoItemRepository = todoItemRepository;
         _guidGenerator = guidGenerator;
     }
 
@@ -28,7 +28,7 @@ public class TodoManager : DomainService, ITodoManager
         Priority priority,
         bool isDone = false)
     {
-        var existTodoItem = await _todoRepository.FirstOrDefaultAsync(x => x.Title == title && x.CreatorId == currentUserId);
+        var existTodoItem = await _todoItemRepository.FirstOrDefaultAsync(x => x.Title == title && x.CreatorId == currentUserId);
         if (existTodoItem != null)
         {
             throw new BusinessException(code: TodoErrorCodes.TodoTitleAlreadyExists);
@@ -45,23 +45,19 @@ public class TodoManager : DomainService, ITodoManager
     }
 
     public async Task<TodoItem> UpdateAsync(
-        Guid id,
+        TodoItem item,
         string title,
         string description,
         DateTime dueDate,
-        Priority priority,
-        bool isDone)
+        Priority priority)
     {
-        var todoItem = await _todoRepository.FindAsync(id);
+        var todoItem = await _todoItemRepository.FindAsync(item.Id);
+
         if (todoItem == null)
         {
-            throw new BusinessException(message: "Todo item not found.");
+            throw new BusinessException(code: TodoErrorCodes.TodoItemDoesNotExist);
         }
 
-        todoItem.Update(title, description, dueDate, isDone, todoItem.Priority);
-
-        await _todoRepository.UpdateAsync(todoItem);
-
-        return todoItem;
+        return todoItem.Update(title, description, dueDate, priority);
     }
 }

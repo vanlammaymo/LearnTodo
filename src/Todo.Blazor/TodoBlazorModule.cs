@@ -55,6 +55,7 @@ using Volo.Abp.Studio.Client.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using Volo.Abp.Timing;
 
 namespace Todo.Blazor;
 
@@ -164,6 +165,13 @@ public class TodoBlazorModule : AbpModule
         ConfigureBlazorise(context);
         ConfigureRouter(context);
         ConfigureMenu(context);
+
+        Configure<AbpClockOptions>(options =>
+        {
+            options.Kind = DateTimeKind.Utc;
+        });
+
+
 
     }
 
@@ -374,5 +382,6 @@ public class TodoBlazorModule : AbpModule
                 .AddInteractiveServerRenderMode()
                 .AddAdditionalAssemblies(builder.ServiceProvider.GetRequiredService<IOptions<AbpRouterOptions>>().Value.AdditionalAssemblies.ToArray());
         });
+
     }
 }

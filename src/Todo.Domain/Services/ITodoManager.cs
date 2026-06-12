@@ -13,11 +13,11 @@ public interface ITodoManager
         DateTime dueDate,
         Priority priority = Priority.Medium,
         bool isDone = false);
+
     Task<TodoItem> UpdateAsync(
-        Guid id,
+        TodoItem item,
         string title,
         string description,
         DateTime dueDate,
-        Priority priority,
-        bool isDone);
+        Priority priority);
 }

@@ -5,8 +5,8 @@ using Todo;
 using Todo.Domain.Services;
 using Todo.Permissions;
 using Todo.Todos;
+using Todo.Todos.Dto;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 
 [Authorize]
@@ -28,12 +28,16 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
     public async Task<TodoItemDto> CreateAsync(CreateTodoItemDto input)
     {
         Guid currentUserId = CurrentUser.GetId();
+
+        input.Priority = input.Priority ?? Priority.Medium;
+        input.DueDate = input.DueDate ?? Clock.Normalize(DateTime.Now.AddDays(3));
+
         TodoItem newItem = await _todoManager.CreateAsync(
             currentUserId,
             input.Title,
             input.Description,
-            input.DueDate,
-            input.Priority
+            input.DueDate.HasValue ? Clock.Normalize(input.DueDate.Value) : Clock.Normalize(DateTime.Now.AddDays(3)),
+            input.Priority.HasValue ? input.Priority.Value : Priority.Medium
         );
 
         await _todoItemRepository.InsertAsync(newItem);
@@ -41,8 +45,14 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
         return _mappers.Map(newItem);
     }
 
-    // public async Task<TodoItemDto> GetAsync(Guid id)
+    // public async Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input)
     // {
+    //     Guid currentUserId = CurrentUser.GetId();
+
+
+    //     // Logic to grant admin or owner update the task
+
+
 
     // }
 }

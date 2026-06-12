@@ -1,6 +1,7 @@
 using System;
-using Todo.Todos;
 using Volo.Abp.Domain.Repositories;
+
+namespace Todo.Todos;
 
 public interface ITodoItemRepository : IRepository<TodoItem, Guid>
 {
