@@ -13,13 +13,15 @@ using Volo.Abp.Users;
 public class TodoItemAppService : ApplicationService, ITodoItemAppService
 {
     private readonly ITodoManager _todoManager;
-    private readonly IRepository<TodoItem, Guid> _todoRepository;
+    private readonly ITodoItemRepository _todoItemRepository;
     private readonly TodoApplicationMappers _mappers;
-    public TodoItemAppService(ITodoManager todoManager, TodoApplicationMappers mappers, IRepository<TodoItem, Guid> todoRepository)
+    public TodoItemAppService(ITodoManager todoManager,
+        TodoApplicationMappers mappers,
+        ITodoItemRepository todoItemRepository)
     {
         _todoManager = todoManager;
         _mappers = mappers;
-        _todoRepository = todoRepository;
+        _todoItemRepository = todoItemRepository;
     }
 
     [Authorize(TodoPermissions.Todos.Create)]
@@ -34,8 +36,13 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
             input.Priority
         );
 
-        await _todoRepository.InsertAsync(newItem);
+        await _todoItemRepository.InsertAsync(newItem);
 
         return _mappers.Map(newItem);
     }
+
+    // public async Task<TodoItemDto> GetAsync(Guid id)
+    // {
+
+    // }
 }

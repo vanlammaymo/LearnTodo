@@ -54,6 +54,7 @@ using Volo.Abp.VirtualFileSystem;
 using Volo.Abp.Studio.Client.AspNetCore;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace Todo.Blazor;
 
@@ -157,18 +158,13 @@ public class TodoBlazorModule : AbpModule
         ConfigureBundles(hostingEnvironment);
         ConfigureHealthChecks(context);
         ConfigureVirtualFileSystem(hostingEnvironment);
-        ConfigureSwaggerServices(context.Services);
+        // ConfigureSwaggerServices(context.Services);
+        ConfigureSwaggerServices(context);
         ConfigureAutoApiControllers();
         ConfigureBlazorise(context);
         ConfigureRouter(context);
         ConfigureMenu(context);
 
-        Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(
-                new JsonStringEnumConverter()
-            );
-        });
     }
 
     private void ConfigureStudio(IHostEnvironment hostingEnvironment)
@@ -256,9 +252,27 @@ public class TodoBlazorModule : AbpModule
         }
     }
 
-    private void ConfigureSwaggerServices(IServiceCollection services)
+    // private void ConfigureSwaggerServices(IServiceCollection services)
+    // {
+    //     services.AddAbpSwaggerGen(
+    //         options =>
+    //         {
+    //             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Todo API", Version = "v1" });
+    //             options.DocInclusionPredicate((docName, description) => true);
+    //             options.CustomSchemaIds(type => type.FullName);
+    //         }
+    //     );
+    // }
+
+    private void ConfigureSwaggerServices(ServiceConfigurationContext context)
     {
-        services.AddAbpSwaggerGen(
+        var configuration = context.Services.GetConfiguration();
+        context.Services.AddAbpSwaggerGenWithOAuth(
+            configuration["AuthServer:Authority"],
+            new Dictionary<string, string>
+            {
+                { "Todo", "Todo API"}
+            },
             options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Todo API", Version = "v1" });
@@ -310,6 +324,7 @@ public class TodoBlazorModule : AbpModule
     {
         var env = context.GetEnvironment();
         var app = context.GetApplicationBuilder();
+        var configuration = context.GetConfiguration();
 
         app.UseForwardedHeaders();
 
@@ -347,6 +362,9 @@ public class TodoBlazorModule : AbpModule
         app.UseAbpSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "Todo API");
+            options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+            options.OAuthScopes("Todo");
+            options.OAuthUsePkce();
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();
