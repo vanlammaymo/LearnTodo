@@ -4,6 +4,7 @@ public static class TodoErrorCodes
 {
     public const string TodoTitleAlreadyExists = "TodoError:001";
     public const string TodoItemDoesNotExist = "TodoError:002";
+    public const string DontHavePermission = "TodoError:003";
     public const string FieldIsRequired = "ValidateMessage:FieldIsRequried";
     public const string FieldMaxLengthError = "ValidateMessage:FieldMaxLengthError";
     public const string InvalidField = "ValidateMessage:InvalidField";

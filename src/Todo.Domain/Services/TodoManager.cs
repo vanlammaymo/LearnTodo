@@ -46,18 +46,29 @@ public class TodoManager : DomainService, ITodoManager
 
     public async Task<TodoItem> UpdateAsync(
         TodoItem item,
-        string title,
-        string description,
-        DateTime dueDate,
-        Priority priority)
+        string? title,
+        string? description,
+        DateTime? dueDate,
+        Priority? priority)
     {
-        var todoItem = await _todoItemRepository.FindAsync(item.Id);
-
-        if (todoItem == null)
+        // Check if another item already matches the  title
+        if (title is not null)
         {
-            throw new BusinessException(code: TodoErrorCodes.TodoItemDoesNotExist);
+            var todoItem = await _todoItemRepository.FirstOrDefaultAsync(x => x.Id != item.Id &&
+                x.CreatorId == item.CreatorId &&
+                x.Title == title);
+
+            if (todoItem != null)
+            {
+                throw new BusinessException(code: TodoErrorCodes.TodoTitleAlreadyExists);
+            }
         }
 
-        return todoItem.Update(title, description, dueDate, priority);
+        return item.Update(
+            title,
+            description,
+            dueDate.HasValue ? Clock.Normalize(dueDate.Value) : null,
+            priority.HasValue ? priority.Value : null
+        );
     }
 }

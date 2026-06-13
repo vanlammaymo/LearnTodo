@@ -7,5 +7,5 @@ namespace Todo.Todos;
 public interface ITodoItemAppService : IApplicationService
 {
     Task<TodoItemDto> CreateAsync(CreateTodoItemDto input);
-    // Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input);
+    Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input);
 }

@@ -106,6 +106,7 @@ public class IdentitySeedDataContributor : IDataSeedContributor, ITransientDepen
             "Todo.Todos.View",
             "Todo.Todos.Create",
             "Todo.Todos.Edit",
+            "Todo.Todos.Delete",
             "Todo.Todos.MarkAsDone"
         };
 

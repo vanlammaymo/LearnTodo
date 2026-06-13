@@ -14,6 +14,7 @@
 
     "TodoError:001": "A todo item with the same title already exists for the current user.",
     "TodoError:002": "A todo item does not exist",
+    "TodoError:003": "You don not have permission",
 
     "ValidateMessage:FieldIsRequired": "{0} is required",
     "ValidateMessage:FieldMaxLengthError": "{0} must not exceed {1} characters",

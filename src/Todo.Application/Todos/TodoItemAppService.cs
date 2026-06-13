@@ -3,9 +3,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Todo;
 using Todo.Domain.Services;
+using Todo.Errors;
 using Todo.Permissions;
 using Todo.Todos;
 using Todo.Todos.Dto;
+using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Users;
 
@@ -29,9 +31,6 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
     {
         Guid currentUserId = CurrentUser.GetId();
 
-        input.Priority = input.Priority ?? Priority.Medium;
-        input.DueDate = input.DueDate ?? Clock.Normalize(DateTime.Now.AddDays(3));
-
         TodoItem newItem = await _todoManager.CreateAsync(
             currentUserId,
             input.Title,
@@ -45,14 +44,27 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
         return _mappers.Map(newItem);
     }
 
-    // public async Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input)
-    // {
-    //     Guid currentUserId = CurrentUser.GetId();
+    public async Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input)
+    {
+        TodoItem todoItem = await _todoItemRepository.GetAsync(input.Id);
 
+        // Check admin or owner update the task
+        var authorizationResult = await AuthorizationService.AuthorizeAsync(todoItem, "OwnerOrAdminPolicy");
 
-    //     // Logic to grant admin or owner update the task
+        if (!authorizationResult.Succeeded)
+        {
+            throw new BusinessException(code: TodoErrorCodes.DontHavePermission);
+        }
 
+        TodoItem newTodoItem = await _todoManager.UpdateAsync(
+            todoItem,
+            input.Title,
+            input.Description,
+            input.DueDate.HasValue ? Clock.Normalize(input.DueDate.Value) : null,
+            input.Priority.HasValue ? input.Priority.Value : null);
 
+        await _todoItemRepository.UpdateAsync(newTodoItem);
 
-    // }
+        return _mappers.Map(newTodoItem);
+    }
 }

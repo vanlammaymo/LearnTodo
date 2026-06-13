@@ -16,8 +16,8 @@ public interface ITodoManager
 
     Task<TodoItem> UpdateAsync(
         TodoItem item,
-        string title,
-        string description,
-        DateTime dueDate,
-        Priority priority);
+        string? title,
+        string? description,
+        DateTime? dueDate,
+        Priority? priority);
 }

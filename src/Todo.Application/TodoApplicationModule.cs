@@ -7,6 +7,7 @@ using Volo.Abp.FeatureManagement;
 using Volo.Abp.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Todo;
 
@@ -24,6 +25,14 @@ public class TodoApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        context.Services.AddSingleton<IAuthorizationHandler, OwnerOrAdminAuthorizationHandler>();
+
         context.Services.AddMapperlyObjectMapper<TodoApplicationMappers>();
+
+        context.Services.AddAuthorizationCore(options =>
+        {
+            options.AddPolicy("OwnerOrAdminPolicy", policy => policy.Requirements.Add(new OwnerOrAdminRequirement()));
+        });
     }
+
 }
