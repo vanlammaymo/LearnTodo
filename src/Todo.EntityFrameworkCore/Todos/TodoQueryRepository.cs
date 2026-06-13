@@ -6,51 +6,75 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Todo.EntityFrameworkCore;
-using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
+using Todo.Todos;
+using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
 
-namespace Todo.Todos;
-
-public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid>, ITodoItemRepository
+public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
 {
-    public TodoItemRepository(IDbContextProvider<TodoDbContext> dbContextProvider) : base(dbContextProvider)
+    private readonly IDbContextProvider<TodoDbContext> _dbContextProvider;
+
+    public TodoQueryRepository(IDbContextProvider<TodoDbContext> dbContextProvider)
     {
+        _dbContextProvider = dbContextProvider;
     }
-    private async Task<IQueryable<TodoItem>> BuildQueryAsync(
-        Guid? creatorId,
-        string? filterText,
-        Priority? priority,
-        DateTime? dueDateFrom,
-        DateTime? dueDateTo
-    )
+
+    public async Task<IQueryable<TodoItemWithCreatorInfo>> BuildQueryAsync(
+        Guid? creatorId = null,
+        string? filterText = null,
+        Priority? priority = null,
+        DateTime? dueDateFrom = null,
+        DateTime? dueDateTo = null,
+        CancellationToken cancellationToken = default)
     {
-        var query = await GetQueryableAsync();
+        var dbContext = await _dbContextProvider.GetDbContextAsync();
+
+        var query =
+            from todo in dbContext.TodoItems
+            join user in dbContext.Users
+                on todo.CreatorId equals user.Id
+            select new TodoItemWithCreatorInfo
+            {
+                Id = todo.Id,
+                Title = todo.Title,
+                Description = todo.Description,
+                IsDone = todo.IsDone,
+                Priority = todo.Priority,
+                DueDate = todo.DueDate,
+                CreatorId = user.Id,
+                CreatorUserName = user.UserName,
+                Email = user.Email
+            };
 
         if (creatorId.HasValue)
         {
-            query = query.Where(x => x.CreatorId == creatorId);
+            query = query.Where(x =>
+                x.CreatorId == creatorId);
         }
 
         if (!string.IsNullOrWhiteSpace(filterText))
         {
             query = query.Where(x =>
                 x.Title.Contains(filterText) ||
-                x.Description.Contains(filterText));
+                x.Description!.Contains(filterText));
         }
 
         if (priority.HasValue)
         {
-            query = query.Where(x => x.Priority == priority.Value);
+            query = query.Where(x =>
+                x.Priority == priority.Value);
         }
 
         if (dueDateFrom.HasValue)
         {
-            query = query.Where(x => x.DueDate >= dueDateFrom.Value);
+            query = query.Where(x =>
+                x.DueDate >= dueDateFrom.Value);
         }
 
         if (dueDateTo.HasValue)
         {
-            query = query.Where(x => x.DueDate <= dueDateTo.Value);
+            query = query.Where(x =>
+                x.DueDate <= dueDateTo.Value);
         }
 
         return query;
@@ -75,7 +99,7 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
         return await query.LongCountAsync(cancellationToken);
     }
 
-    public async Task<List<TodoItem>> GetListAsync(
+    public async Task<List<TodoItemWithCreatorInfo>> GetListWithCreatorInfoAsync(
         Guid? creatorId = null,
         string? filterText = null,
         Priority? priority = null,
@@ -94,15 +118,13 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
             dueDateTo);
 
         query = query.OrderBy(
-            string.IsNullOrWhiteSpace(sorting) ?
-            "DueDate asc" :
-            sorting
-        );
+            string.IsNullOrWhiteSpace(sorting)
+                ? "DueDate asc"
+                : sorting);
 
         return await query
             .Skip(skipCount)
             .Take(maxResultCount)
             .ToListAsync(cancellationToken);
     }
-
 }

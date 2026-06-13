@@ -1,9 +1,8 @@
 using System;
-using Volo.Abp.Application.Dtos;
 
-namespace Todo.Todos.Dto;
+namespace Todo.Todos;
 
-public class TodoItemDto : AuditedEntityDto
+public class TodoItemWithCreatorInfo
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
@@ -12,6 +11,7 @@ public class TodoItemDto : AuditedEntityDto
     public Priority Priority { get; set; }
     public DateTime DueDate { get; set; }
 
-    public string? CreatorUserName { get; set; }
-    public string? Email { get; set; }
+    public Guid CreatorId { get; set; }
+    public string CreatorUserName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }

@@ -9,7 +9,6 @@ using Todo.Localization;
 
 namespace Todo.Todos.Dto;
 
-
 public class CreateTodoItemDto : IValidatableObject
 {
     [Required]

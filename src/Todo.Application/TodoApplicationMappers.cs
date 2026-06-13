@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Riok.Mapperly.Abstractions;
 using Todo.Todos;
 using Todo.Todos.Dto;
@@ -11,4 +12,10 @@ public partial class TodoApplicationMappers : MapperBase<TodoItem, TodoItemDto>
     public override partial TodoItemDto Map(TodoItem source);
 
     public override partial void Map(TodoItem source, TodoItemDto destination);
+
+    public partial List<TodoItemDto> Map(List<TodoItem> source);
+
+    public partial TodoItemDto Map(TodoItemWithCreatorInfo source);
+
+    public partial List<TodoItemDto> Map(List<TodoItemWithCreatorInfo> source);
 }
