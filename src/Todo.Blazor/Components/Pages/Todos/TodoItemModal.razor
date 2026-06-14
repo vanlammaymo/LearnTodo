@@ -1,0 +1,174 @@
+@namespace Todo.Blazor.Components.Todos
+@using Volo.Abp
+@using Todo.Todos
+@using Todo.Todos.Dto
+@using Todo.Localization
+@inject ITodoItemAppService TodoItemAppService
+@inject IStringLocalizer<TodoResource> L
+@inject INotificationService NotificationService
+
+<Modal @ref="_modal">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>@(_isEditMode ? "Cập nhật Task" : "Tạo Task mới")</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Validations @ref="_validations" Model="@_input" ValidateOnLoad="false">
+
+                <Validation>
+                    <Field>
+                        <FieldLabel>Tiêu đề <span class="text-danger">*</span></FieldLabel>
+                        <TextEdit @bind="_input.Title" Placeholder="Nhập tiêu đề...">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Validation>
+
+                <Validation>
+                    <Field>
+                        <FieldLabel>Mô tả</FieldLabel>
+                        <MemoEdit @bind="_input.Description" Rows="3" Placeholder="Nhập mô tả...">
+                            <Feedback>
+                                <ValidationError />
+                            </Feedback>
+                        </MemoEdit>
+                    </Field>
+                </Validation>
+
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Validation>
+                            <Field>
+                                <FieldLabel>Hạn hoàn thành <span class="text-danger">*</span></FieldLabel>
+                                <DateEdit TValue="DateTime" @bind="_input.DueDate">
+                                    <Feedback>
+                                        <ValidationError />
+                                    </Feedback>
+                                </DateEdit>
+                            </Field>
+                        </Validation>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.Is6">
+                        <Field>
+                            <FieldLabel>Độ ưu tiên <span class="text-danger">*</span></FieldLabel>
+                            <Select TValue="string" @bind-SelectedValue="_input.Priority">
+                                @foreach (var p in Enum.GetValues<Priority>())
+                                {
+                                    <SelectItem Value="@p.ToString()">
+                                        @L[$"Enum:Priority:{p}"]
+                                    </SelectItem>
+                                }
+                            </Select>
+                        </Field>
+                    </Column>
+                </Row>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <Alert Color="Color.Danger" Visible>
+                        @_errorMessage
+                    </Alert>
+                }
+
+            </Validations>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="Close">Hủy</Button>
+            <Button Color="Color.Primary" Clicked="HandleSubmit" Loading="_isLoading">
+                @(_isEditMode ? "Cập nhật" : "Tạo mới")
+            </Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private Modal _modal = default!;
+    private Validations _validations = default!;
+    private bool _isEditMode;
+    private bool _isLoading;
+    private string _errorMessage = "";
+    private Guid _editingId;
+
+    private CreateTodoItemDto _input = new();
+
+    public async Task OpenCreate()
+    {
+        _isEditMode = false;
+        _input = new CreateTodoItemDto
+        {
+            DueDate = DateTime.Today.AddDays(1),
+            Priority = Priority.Medium
+        };
+        _errorMessage = "";
+        await _modal.Show();
+    }
+
+    public async Task OpenEdit(TodoItemDto item)
+    {
+        _isEditMode = true;
+        _editingId = item.Id;
+        _input = new CreateTodoItemDto
+        {
+            Title = item.Title,
+            Description = item.Description,
+            DueDate = item.DueDate,
+            Priority = item.Priority
+        };
+        _errorMessage = "";
+        await _modal.Show();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (!await _validations.ValidateAll()) return;
+
+        _isLoading = true;
+        _errorMessage = "";
+
+        try
+        {
+            if (_isEditMode)
+            {
+                await TodoItemAppService.UpdateAsync(new UpdateTodoItemDto
+                {
+                    Id = _editingId,
+                    Title = _input.Title,
+                    Description = _input.Description,
+                    DueDate = _input.DueDate,
+                    Priority = _input.Priority
+                });
+            }
+            else
+            {
+                await TodoItemAppService.CreateAsync(_input);
+            }
+
+            await _modal.Hide();
+            await NotificationService.Success(_isEditMode ? "Cập nhật thành công!" : "Tạo task thành công!");
+            await OnSaved.InvokeAsync();
+        }
+        catch (BusinessException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Có lỗi xảy ra: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        await _modal.Hide();
+        _errorMessage = "";
+    }
+}

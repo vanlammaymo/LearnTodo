@@ -1,0 +1,166 @@
+@page "/todos"
+
+@using Todo.Localization
+@using Todo.Todos
+@using Todo.Todos.Dto
+@using Todo.Permissions
+@using Todo.Blazor.Components.Todos
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject ITodoItemAppService TodoAppService
+@inject IStringLocalizer<TodoResource> L
+@inject IAuthorizationService AuthorizationService
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Danh sách Task</h5>
+        @if (_canCreate)
+        {
+            <button class="btn btn-primary btn-sm" @onclick="OpenCreate">
+                <i class="fa fa-plus me-1"></i> Tạo mới
+            </button>
+        }
+    </div>
+
+    <div class="card-body">
+        @if (_isLoading)
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" />
+            </div>
+        }
+        else if (!_items.Any())
+        {
+            <div class="text-center text-muted py-4">
+                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
+                Chưa có task nào.
+            </div>
+        }
+        else
+        {
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Độ ưu tiên</th>
+                        <th>Hạn hoàn thành</th>
+                        <th>Trạng thái</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _items)
+                    {
+                        <tr>
+                            <td>@item.Title</td>
+                            <td>
+                                <span class="badge @GetPriorityBadge(item.Priority)">
+                                    @L[$"Enum:Priority:{item.Priority}"]
+                                </span>
+                            </td>
+                            <td>@item.DueDate.ToShortDateString()</td>
+                            <td>
+                                @if (item.IsDone)
+                                {
+                                    <span class="badge bg-success">Hoàn thành</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Chưa xong</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (_canUpdate)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                            @onclick="() => OpenEdit(item)">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                }
+                                @* @if (!item.IsDone && _canMarkCompleted)
+                                {
+                                    <button class="btn btn-sm btn-outline-success me-1"
+                                            @onclick="() => MarkCompleted(item.Id)">
+                                        <i class="fa fa-check"></i>
+                                    </button>
+                                }
+                                @if (_canDelete)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            @onclick="() =>  Delete(item.Id)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                } *@
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<TodoItemModal @ref="_modal" OnSaved="LoadData" />
+
+@code {
+    private List<TodoItemDto> _items = new();
+    private bool _isLoading;
+    private TodoItemModal _modal = default!;
+
+    private bool _canCreate;
+    private bool _canUpdate;
+    private bool _canDelete;
+    private bool _canMarkCompleted;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Kiểm tra permission trước
+        _canCreate = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Create);
+        _canUpdate = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Update);
+        _canDelete = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Delete);
+        _canMarkCompleted = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.MarkAsDone);
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await TodoAppService.GetListAsync(new GetTodoListDto
+            {
+                MaxResultCount = 50,
+                Sorting = "DueDate asc"
+            });
+            _items = result.Items.ToList();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenCreate() => _modal.OpenCreate();
+    private void OpenEdit(TodoItemDto item) => _modal.OpenEdit(item);
+
+    @* private async Task MarkCompleted(Guid id)
+    {
+        await TodoAppService.MarkAsDoneAsync(id);
+        await LoadData();
+    } *@
+
+    @* private async Task Delete(Guid id)
+    {
+        await TodoAppService.DeleteAsync(id);
+        await LoadData();
+    } *@
+
+    private string GetPriorityBadge(Priority priority) => priority switch
+    {
+        Priority.High => "bg-danger",
+        Priority.Medium => "bg-warning text-dark",
+        Priority.Low => "bg-secondary",
+        _ => "bg-secondary"
+    };
+}

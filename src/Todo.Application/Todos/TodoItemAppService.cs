@@ -11,7 +11,6 @@ using Todo.Todos.Dto;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
-using Volo.Abp.Identity;
 using Volo.Abp.Users;
 
 [Authorize]
@@ -21,17 +20,15 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
     private readonly ITodoItemRepository _todoItemRepository;
     private readonly ITodoQueryRepository _todoQueryRepository;
     private readonly TodoApplicationMappers _mappers;
-    private readonly IIdentityUserRepository _identityUserRepository;
-    public TodoItemAppService(ITodoManager todoManager,
+    public TodoItemAppService(
+        ITodoManager todoManager,
         TodoApplicationMappers mappers,
         ITodoItemRepository todoItemRepository,
-        IIdentityUserRepository identityUserRepository,
         ITodoQueryRepository todoQueryRepository)
     {
         _todoManager = todoManager;
         _mappers = mappers;
         _todoItemRepository = todoItemRepository;
-        _identityUserRepository = identityUserRepository;
         _todoQueryRepository = todoQueryRepository;
     }
 
