@@ -15,6 +15,7 @@
     "TodoError:001": "A todo item with the same title already exists for the current user.",
     "TodoError:002": "A todo item does not exist",
     "TodoError:003": "You don not have permission",
+    "TodoError:004": "Task does not exist",
 
     "ValidateMessage:FieldIsRequired": "{0} is required",
     "ValidateMessage:FieldMaxLengthError": "{0} must not exceed {1} characters",
@@ -28,6 +29,8 @@
     "Enum:Priority:High": "High",
     "Enum:Priority:0": "Low",
     "Enum:Priority:1": "Medium",
-    "Enum:Priority:2": "High"
+    "Enum:Priority:2": "High",
+
+    "Menu:Todos": "Todo App"
   }
 }

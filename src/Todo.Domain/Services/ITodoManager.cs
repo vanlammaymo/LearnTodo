@@ -19,5 +19,6 @@ public interface ITodoManager
         string? title,
         string? description,
         DateTime? dueDate,
-        Priority? priority);
+        Priority? priority,
+        bool? isDone);
 }

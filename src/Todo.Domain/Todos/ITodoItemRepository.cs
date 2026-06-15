@@ -14,6 +14,7 @@ public interface ITodoItemRepository : IRepository<TodoItem, Guid>
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default);
 
     Task<List<TodoItem>> GetListAsync(
@@ -22,6 +23,7 @@ public interface ITodoItemRepository : IRepository<TodoItem, Guid>
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         string? sorting = null,
         int skipCount = 0,
         int maxResultCount = int.MaxValue,

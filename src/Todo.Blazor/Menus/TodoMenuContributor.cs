@@ -22,7 +22,7 @@ public class TodoMenuContributor : IMenuContributor
     private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
     {
         var l = context.GetLocalizer<TodoResource>();
-        
+
         context.Menu.Items.Insert(
             0,
             new ApplicationMenuItem(
@@ -33,6 +33,15 @@ public class TodoMenuContributor : IMenuContributor
                 order: 1
             )
         );
+
+        context.Menu.Items.Add(new ApplicationMenuItem(
+            TodoMenus.Todos,
+            l["Menu:Todos"],
+            "/todos",
+            icon: "fa fa-list-check",
+            order: 1,
+            requiredPermissionName: TodoPermissions.Todos.View
+        ));
 
         //Administration
         var administration = context.Menu.GetAdministration();

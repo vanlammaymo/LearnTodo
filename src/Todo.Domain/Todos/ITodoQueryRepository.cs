@@ -14,6 +14,7 @@ public interface ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default
     );
 
@@ -23,6 +24,7 @@ public interface ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default);
 
     Task<List<TodoItemWithCreatorInfo>> GetListWithCreatorInfoAsync(
@@ -31,6 +33,7 @@ public interface ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         string? sorting = null,
         int skipCount = 0,
         int maxResultCount = int.MaxValue,

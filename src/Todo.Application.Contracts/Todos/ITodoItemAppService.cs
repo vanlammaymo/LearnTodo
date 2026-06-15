@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Todo.Todos.Dto;
 using Volo.Abp.Application.Dtos;
@@ -10,4 +11,5 @@ public interface ITodoItemAppService : IApplicationService
     Task<TodoItemDto> CreateAsync(CreateTodoItemDto input);
     Task<TodoItemDto> UpdateAsync(UpdateTodoItemDto input);
     Task<PagedResultDto<TodoItemDto>> GetListAsync(GetTodoListDto input);
+    Task DeleteAsync(Guid id);
 }

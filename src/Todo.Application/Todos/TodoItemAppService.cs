@@ -11,6 +11,7 @@ using Todo.Todos.Dto;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Users;
 
 [Authorize]
@@ -67,7 +68,8 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
             input.Title,
             input.Description,
             input.DueDate.HasValue ? Clock.Normalize(input.DueDate.Value) : null,
-            input.Priority.HasValue ? input.Priority.Value : null);
+            input.Priority.HasValue ? input.Priority.Value : null,
+            input.IsDone ?? null);
 
         await _todoItemRepository.UpdateAsync(newTodoItem);
 
@@ -89,7 +91,8 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
                 input.FilterText,
                 input.Priority,
                 input.DueDateFrom,
-                input.DueDateTo);
+                input.DueDateTo,
+                input.IsDone);
 
             var itemsWithCreatorInfo = await _todoQueryRepository.GetListWithCreatorInfoAsync(
                 input.CreatorId,
@@ -97,6 +100,7 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
                 input.Priority,
                 input.DueDateFrom,
                 input.DueDateTo,
+                input.IsDone ?? null,
                 input.Sorting,
                 input.SkipCount ?? 0,
                 input.MaxResultCount ?? int.MaxValue
@@ -113,7 +117,8 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
                 input.FilterText,
                 input.Priority,
                 input.DueDateFrom,
-                input.DueDateTo);
+                input.DueDateTo,
+                input.IsDone);
 
             items = await _todoItemRepository.GetListAsync(
                 currentUserId,
@@ -121,6 +126,7 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
                 input.Priority,
                 input.DueDateFrom,
                 input.DueDateTo,
+                input.IsDone ?? null,
                 input.Sorting,
                 input.SkipCount ?? 0,
                 input.MaxResultCount ?? int.MaxValue);
@@ -130,5 +136,24 @@ public class TodoItemAppService : ApplicationService, ITodoItemAppService
                 _mappers.Map(items)
             );
         }
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        TodoItem? item = await _todoItemRepository.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (item is null)
+        {
+            throw new BusinessException(TodoErrorCodes.TaskDoesNotExist, TodoErrorCodes.TaskDoesNotExist);
+        }
+
+        var authorizationResult = await AuthorizationService.AuthorizeAsync(item, "OwnerOrAdminPolicy");
+
+        if (!authorizationResult.Succeeded)
+        {
+            throw new BusinessException(TodoErrorCodes.DontHavePermission, TodoErrorCodes.DontHavePermission);
+        }
+
+        await _todoItemRepository.DeleteAsync(id);
     }
 }

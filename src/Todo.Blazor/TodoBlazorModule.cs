@@ -56,6 +56,7 @@ using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using Volo.Abp.Timing;
+using Volo.Abp.Localization.ExceptionHandling;
 
 namespace Todo.Blazor;
 
@@ -171,7 +172,13 @@ public class TodoBlazorModule : AbpModule
             options.Kind = DateTimeKind.Utc;
         });
 
-
+        // Configure<AbpExceptionLocalizationOptions>(options =>
+        // {
+        //     options.MapCodeNamespace(
+        //         "Todo",
+        //         typeof(TodoResource)
+        //     );
+        // });
 
     }
 

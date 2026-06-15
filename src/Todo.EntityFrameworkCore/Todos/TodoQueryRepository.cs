@@ -25,6 +25,7 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default)
     {
         var dbContext = await _dbContextProvider.GetDbContextAsync();
@@ -77,6 +78,12 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
                 x.DueDate <= dueDateTo.Value);
         }
 
+        if (isDone.HasValue)
+        {
+            query = query.Where(x =>
+                x.IsDone == isDone.Value);
+        }
+
         return query;
     }
 
@@ -86,6 +93,7 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default)
     {
         var query = await BuildQueryAsync(
@@ -93,7 +101,8 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
             filterText,
             priority,
             dueDateFrom,
-            dueDateTo
+            dueDateTo,
+            isDone
         );
 
         return await query.LongCountAsync(cancellationToken);
@@ -105,6 +114,7 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         string? sorting = null,
         int skipCount = 0,
         int maxResultCount = int.MaxValue,
@@ -115,7 +125,8 @@ public class TodoQueryRepository : IScopedDependency, ITodoQueryRepository
             filterText,
             priority,
             dueDateFrom,
-            dueDateTo);
+            dueDateTo,
+            isDone);
 
         query = query.OrderBy(
             string.IsNullOrWhiteSpace(sorting)

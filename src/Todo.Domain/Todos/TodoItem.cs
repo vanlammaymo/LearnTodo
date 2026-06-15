@@ -4,7 +4,7 @@ using Volo.Abp.Timing;
 
 namespace Todo.Todos;
 
-public class TodoItem : AuditedAggregateRoot<Guid>
+public class TodoItem : FullAuditedAggregateRoot<Guid>
 {
     public string Title { get; protected set; } = string.Empty;
     public string Description { get; protected set; } = string.Empty;
@@ -37,31 +37,15 @@ public class TodoItem : AuditedAggregateRoot<Guid>
         string? title = null,
         string? description = null,
         DateTime? dueDate = null,
-        Priority? priority = null)
+        Priority? priority = null,
+        bool? isDone = null)
     {
         if (title is not null) Title = title;
         if (description is not null) Description = description;
         if (dueDate.HasValue) DueDate = dueDate.Value;
         if (priority.HasValue) Priority = priority.Value;
+        if (isDone is not null) IsDone = isDone.Value;
 
         return this;
-    }
-
-    public void MarkAsDone()
-    {
-        if (IsDone)
-        {
-            return;
-        }
-        IsDone = true;
-    }
-
-    public void ReOpen()
-    {
-        if (!IsDone)
-        {
-            return;
-        }
-        IsDone = false;
     }
 }

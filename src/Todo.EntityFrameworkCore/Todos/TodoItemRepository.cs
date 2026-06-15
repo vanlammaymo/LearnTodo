@@ -21,7 +21,8 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
         string? filterText,
         Priority? priority,
         DateTime? dueDateFrom,
-        DateTime? dueDateTo
+        DateTime? dueDateTo,
+        bool? isDone
     )
     {
         var query = await GetQueryableAsync();
@@ -53,6 +54,11 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
             query = query.Where(x => x.DueDate <= dueDateTo.Value);
         }
 
+        if (isDone.HasValue)
+        {
+            query = query.Where(x => x.IsDone == isDone.Value);
+        }
+
         return query;
     }
 
@@ -62,6 +68,7 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         CancellationToken cancellationToken = default)
     {
         var query = await BuildQueryAsync(
@@ -69,7 +76,8 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
             filterText,
             priority,
             dueDateFrom,
-            dueDateTo
+            dueDateTo,
+            isDone
         );
 
         return await query.LongCountAsync(cancellationToken);
@@ -81,6 +89,7 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
         Priority? priority = null,
         DateTime? dueDateFrom = null,
         DateTime? dueDateTo = null,
+        bool? isDone = null,
         string? sorting = null,
         int skipCount = 0,
         int maxResultCount = int.MaxValue,
@@ -91,7 +100,8 @@ public class TodoItemRepository : EfCoreRepository<TodoDbContext, TodoItem, Guid
             filterText,
             priority,
             dueDateFrom,
-            dueDateTo);
+            dueDateTo,
+            isDone);
 
         query = query.OrderBy(
             string.IsNullOrWhiteSpace(sorting) ?

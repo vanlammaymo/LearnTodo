@@ -9,6 +9,7 @@ public class GetTodoListDto
     public Priority? Priority { get; set; }
     public DateTime? DueDateFrom { get; set; }
     public DateTime? DueDateTo { get; set; }
+    public bool? IsDone { get; set; }
     public string? Sorting { get; set; }
     public int? SkipCount { get; set; }
     public int? MaxResultCount { get; set; }

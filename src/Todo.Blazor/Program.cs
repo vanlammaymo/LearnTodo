@@ -39,14 +39,6 @@ public class Program
             await app.InitializeApplicationAsync();
             await app.RunAsync();
 
-            builder.Services
-                .AddBlazorise(options =>
-                {
-                    options.Immediate = true;
-                })
-                .AddBootstrap5Providers()
-                .AddFontAwesomeIcons();
-
             return 0;
         }
         catch (Exception ex)

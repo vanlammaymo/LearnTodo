@@ -1,166 +1,271 @@
+@namespace Todo.Blazor.Components.Todos
 @page "/todos"
-
-@using Todo.Localization
+@attribute [Authorize]
 @using Todo.Todos
 @using Todo.Todos.Dto
+@using Todo.Localization
 @using Todo.Permissions
-@using Todo.Blazor.Components.Todos
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
-@inject ITodoItemAppService TodoAppService
+@using Volo.Abp.Application.Dtos
+@using Volo.Abp.Users
+@inject ICurrentUser CurrentUser
+@inject ITodoItemAppService TodoItemAppService
 @inject IStringLocalizer<TodoResource> L
 @inject IAuthorizationService AuthorizationService
+@inject IUiMessageService UiMessageService
+@inject IUiNotificationService UiNotificationService
 
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Danh sách Task</h5>
-        @if (_canCreate)
-        {
-            <button class="btn btn-primary btn-sm" @onclick="OpenCreate">
-                <i class="fa fa-plus me-1"></i> Tạo mới
-            </button>
-        }
-    </div>
-
-    <div class="card-body">
-        @if (_isLoading)
-        {
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" />
-            </div>
-        }
-        else if (!_items.Any())
-        {
-            <div class="text-center text-muted py-4">
-                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
-                Chưa có task nào.
-            </div>
-        }
-        else
-        {
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tiêu đề</th>
-                        <th>Độ ưu tiên</th>
-                        <th>Hạn hoàn thành</th>
-                        <th>Trạng thái</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in _items)
+<Card>
+    <CardHeader>
+        <Div Class="d-flex justify-content-between align-items-center">
+            <CardTitle>
+                @L["TodoList"]
+            </CardTitle>
+            @if (_canCreate)
+            {
+                <Button
+                    Color="Color.Primary"
+                    Size="Size.Small"
+                    Clicked="OpenCreate">
+                    <Icon Name="IconName.Add" />
+                    @L["CreateNew"]
+                </Button>
+            }
+        </Div>
+    </CardHeader>
+    <CardBody>
+        <Row Class="mb-3">
+            <Column ColumnSize="ColumnSize.Is4">
+                <TextInput @bind-Value="@_filter.FilterText" Placeholder="Find by string.." @bind-Value:after="OnFilterChanged" />
+            </Column>
+            <Column ColumnSize="ColumnSize.Is3">
+                <Select TValue="Priority?" @bind-Value="_filter.Priority" @bind-Value:after="OnFilterChanged" >
+                    <SelectItem Value="@((Priority?)null)"> -- All -- </SelectItem>
+                    @foreach (var p in Enum.GetValues<Priority>())
                     {
-                        <tr>
-                            <td>@item.Title</td>
-                            <td>
-                                <span class="badge @GetPriorityBadge(item.Priority)">
-                                    @L[$"Enum:Priority:{item.Priority}"]
-                                </span>
-                            </td>
-                            <td>@item.DueDate.ToShortDateString()</td>
-                            <td>
-                                @if (item.IsDone)
-                                {
-                                    <span class="badge bg-success">Hoàn thành</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">Chưa xong</span>
-                                }
-                            </td>
-                            <td class="text-end">
-                                @if (_canUpdate)
-                                {
-                                    <button class="btn btn-sm btn-outline-primary me-1"
-                                            @onclick="() => OpenEdit(item)">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
-                                }
-                                @* @if (!item.IsDone && _canMarkCompleted)
-                                {
-                                    <button class="btn btn-sm btn-outline-success me-1"
-                                            @onclick="() => MarkCompleted(item.Id)">
-                                        <i class="fa fa-check"></i>
-                                    </button>
-                                }
-                                @if (_canDelete)
-                                {
-                                    <button class="btn btn-sm btn-outline-danger"
-                                            @onclick="() =>  Delete(item.Id)">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                } *@
-                            </td>
-                        </tr>
+                        <SelectItem Value="@((Priority?)p)">
+                            @L[$"Enum:Priority:{p}"]
+                        </SelectItem>
                     }
-                </tbody>
-            </table>
-        }
-    </div>
-</div>
-
+                </Select>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is3">
+                <Select TValue="bool?" @bind-Value="_filter.IsDone" @bind-Value:after="OnFilterChanged" >
+                    <SelectItem Value="@((bool?)null)">-- All --</SelectItem>
+                    <SelectItem Value="@((bool?)false)">Unfinished</SelectItem>
+                    <SelectItem Value="@((bool?)true)">Finished</SelectItem>
+                </Select>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is2">
+                <Button
+                    Color="Color.Secondary"
+                    Clicked="ResetFilter"
+                    Block>
+                    Reset Filter
+                </Button>
+            </Column>
+        </Row>
+        <DataGrid
+            TItem="TodoItemDto"
+            Data="_items"
+            Responsive
+            Hoverable
+            Striped
+            ShowPager
+            PageSize="10"
+            TotalItems="_totalCount"
+            EmptyText="No task yet.">
+            <DataGridColumns>
+                <DataGridColumn
+                    TItem="TodoItemDto"
+                    Field="@nameof(TodoItemDto.Title)"
+                    Caption="Title" />
+                <DataGridColumn
+                    TItem="TodoItemDto"
+                    Field="@nameof(TodoItemDto.Description)"
+                    Caption="Description" />
+                <DataGridColumn
+                    TItem="TodoItemDto"
+                    Field="@nameof(TodoItemDto.Priority)"
+                    Caption="Priority">
+                    <DisplayTemplate>
+                        <Badge Color="@GetPriorityColor(context.Item.Priority)">
+                            @L[$"Enum:Priority:{context.Item.Priority}"]
+                        </Badge>
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn
+                    TItem="TodoItemDto"
+                    Field="@nameof(TodoItemDto.DueDate)"
+                    Caption="Due date">
+                    <DisplayTemplate>
+                    @context.Item.DueDate.ToString("yyyy-MM-dd HH:mm:ss")
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn
+                    TItem="TodoItemDto"
+                    Field="@nameof(TodoItemDto.IsDone)"
+                    Caption="Status">
+                    <DisplayTemplate>
+                        @if (context.Item.IsDone)
+                        {
+                            <Badge Color="Color.Success">Finished</Badge>
+                        }
+                        else
+                        {
+                            <Badge Color="Color.Warning">Unfinished</Badge>
+                        }
+                    </DisplayTemplate>
+                </DataGridColumn>
+                @if (_isAdmin)
+                {
+                    <DataGridColumn
+                        TItem="TodoItemDto"
+                        Field="@nameof(TodoItemDto.CreatorUserName)"
+                        Caption="Creator UserName" />
+                }
+                <DataGridColumn TItem="TodoItemDto" Caption="Actions">
+                    <DisplayTemplate>
+                        <Div Flex="Flex.Row" Gap="Gap.Is1">
+                            @if (_canUpdate)
+                            {
+                                <Button
+                                    Color="Color.Primary"
+                                    Size="Size.Small"
+                                    Outline
+                                    Clicked="@(() => OpenEdit(context.Item))">
+                                    <Icon Name="IconName.Edit" />
+                                </Button>
+                            }
+                            @if (!context.Item.IsDone)
+                            {
+                                <Button
+                                    Color="Color.Success"
+                                    Size="Size.Small"
+                                    Outline
+                                    Clicked="@(() => MarkAsDone(context.Item.Id))">
+                                    <Icon Name="IconName.Check" />
+                                </Button>
+                            }
+                            @if (_canDelete)
+                            {
+                                <Button
+                                    Color="Color.Danger"
+                                    Size="Size.Small"
+                                    Outline
+                                    Clicked="@(() => Delete(context.Item.Id))">
+                                    <Icon Name="IconName.Delete" />
+                                </Button>
+                            }
+                        </Div>
+                    </DisplayTemplate>
+                </DataGridColumn>
+            </DataGridColumns>
+        </DataGrid>
+    </CardBody>
+</Card>
 <TodoItemModal @ref="_modal" OnSaved="LoadData" />
 
-@code {
-    private List<TodoItemDto> _items = new();
-    private bool _isLoading;
+@code
+{
+    private bool _isAdmin;
+
+    private List<TodoItemDto> _items = new List<TodoItemDto>();
+
+    private int _totalCount;
+
     private TodoItemModal _modal = default!;
 
     private bool _canCreate;
+
     private bool _canUpdate;
+
     private bool _canDelete;
-    private bool _canMarkCompleted;
+
+    private GetTodoListDto _filter = new GetTodoListDto()
+    {
+        MaxResultCount = 50,
+        Sorting = "DueDate asc"
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        // Kiểm tra permission trước
+        _isAdmin = CurrentUser.IsInRole(Roles.Admin);
+
         _canCreate = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Create);
+
         _canUpdate = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Update);
+
         _canDelete = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.Delete);
-        _canMarkCompleted = await AuthorizationService.IsGrantedAsync(TodoPermissions.Todos.MarkAsDone);
 
         await LoadData();
     }
 
     private async Task LoadData()
     {
-        _isLoading = true;
-        try
+        PagedResultDto<TodoItemDto>? result = await TodoItemAppService.GetListAsync(_filter);
+
+        _items = result.Items.ToList();
+
+        _totalCount = (int)result.TotalCount;
+    }
+
+    private async Task ResetFilter()
+    {
+        _filter = new GetTodoListDto()
         {
-            var result = await TodoAppService.GetListAsync(new GetTodoListDto
-            {
-                MaxResultCount = 50,
-                Sorting = "DueDate asc"
-            });
-            _items = result.Items.ToList();
-        }
-        finally
-        {
-            _isLoading = false;
-        }
+            FilterText = null,
+            IsDone = null,
+            Priority = null,
+            DueDateFrom = null,
+            DueDateTo = null,
+            Sorting = "DueDate asc"
+        };
+
+        await LoadData();
     }
 
     private void OpenCreate() => _modal.OpenCreate();
+
     private void OpenEdit(TodoItemDto item) => _modal.OpenEdit(item);
 
-    @* private async Task MarkCompleted(Guid id)
+    private async Task MarkAsDone(Guid id)
     {
-        await TodoAppService.MarkAsDoneAsync(id);
-        await LoadData();
-    } *@
+        UpdateTodoItemDto markAsDone = new UpdateTodoItemDto()
+        {
+            Id = id,
+            IsDone = true
+        };
 
-    @* private async Task Delete(Guid id)
-    {
-        await TodoAppService.DeleteAsync(id);
-        await LoadData();
-    } *@
+        await TodoItemAppService.UpdateAsync(markAsDone);
 
-    private string GetPriorityBadge(Priority priority) => priority switch
+        await UiNotificationService.Success(message: "Đã đánh dấu hoàn thành");
+
+        await LoadData();
+    }
+
+    private async Task Delete(Guid id)
     {
-        Priority.High => "bg-danger",
-        Priority.Medium => "bg-warning text-dark",
-        Priority.Low => "bg-secondary",
-        _ => "bg-secondary"
+        bool confirmed = await UiMessageService.Confirm(message: "Bạn có chắc muốn xóa task?", title: "Xác nhận xóa");
+        if (!confirmed) return;
+
+        await TodoItemAppService.DeleteAsync(id);
+
+        await UiNotificationService.Success(message: "Xóa task thành công");
+
+        await LoadData();
+    }
+
+    private Color GetPriorityColor(Priority priority) => priority switch
+    {
+        Priority.High => Color.Danger,
+
+        Priority.Medium => Color.Warning,
+
+        _ => Color.Secondary
     };
+
+    private async Task OnFilterChanged()
+    {
+        await LoadData();
+    }
 }

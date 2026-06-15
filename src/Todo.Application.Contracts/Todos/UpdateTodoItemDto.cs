@@ -23,6 +23,8 @@ public class UpdateTodoItemDto : IValidatableObject
 
     public DateTime? DueDate { get; set; }
 
+    public bool? IsDone { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var L = validationContext.GetRequiredService<IStringLocalizer<TodoResource>>();
@@ -32,7 +34,8 @@ public class UpdateTodoItemDto : IValidatableObject
         if (Title is null &&
             Description is null &&
             Priority is null &&
-            DueDate is null)
+            DueDate is null &&
+            IsDone is null)
         {
             errors.Add(new ValidationResult(
                 L[TodoErrorCodes.AtLeastOneFieldRequired]

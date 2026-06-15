@@ -1,84 +1,107 @@
 @namespace Todo.Blazor.Components.Todos
-@using Volo.Abp
 @using Todo.Todos
 @using Todo.Todos.Dto
 @using Todo.Localization
+@using Volo.Abp.Validation
+@using Volo.Abp.Http.Client
+
 @inject ITodoItemAppService TodoItemAppService
 @inject IStringLocalizer<TodoResource> L
-@inject INotificationService NotificationService
+@inject IUiNotificationService UiNotificationService
 
 <Modal @ref="_modal">
-    <ModalContent Centered>
+    <ModalContent Centered Size="ModalSize.Large">
         <ModalHeader>
-            <ModalTitle>@(_isEditMode ? "Cập nhật Task" : "Tạo Task mới")</ModalTitle>
+            <ModalTitle>@(_isEditMode ? L["EditATask"] : L["CreateANewTask"])</ModalTitle>
             <CloseButton />
         </ModalHeader>
+
         <ModalBody>
-            <Validations @ref="_validations" Model="@_input" ValidateOnLoad="false">
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <Alert Color="Color.Danger" Visible>
+                    <AlertMessage>@_errorMessage</AlertMessage>
+                </Alert>
+            }
 
-                <Validation>
+            @if (_isEditMode)
+            {
+                <!-- Update form - all fields are nullable -->
+                <Fields>
                     <Field>
-                        <FieldLabel>Tiêu đề <span class="text-danger">*</span></FieldLabel>
-                        <TextEdit @bind="_input.Title" Placeholder="Nhập tiêu đề...">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </TextEdit>
+                        <TextInput type="text" @bind-Value="@_updateInput.Title"
+                                   Placeholder="It will not change unless you enter anything" />
+
                     </Field>
-                </Validation>
 
-                <Validation>
-                    <Field>
-                        <FieldLabel>Mô tả</FieldLabel>
-                        <MemoEdit @bind="_input.Description" Rows="3" Placeholder="Nhập mô tả...">
-                            <Feedback>
-                                <ValidationError />
-                            </Feedback>
-                        </MemoEdit>
+                    <Field ColumnSize="ColumnSize.Is12">
+                        <FieldLabel>Description</FieldLabel>
+                        <TextInput type="text" @bind-Value="@_updateInput.Description"
+                                   Placeholder="It will not change unless you enter anything" />
                     </Field>
-                </Validation>
 
-                <Row>
-                    <Column ColumnSize="ColumnSize.Is6">
-                        <Validation>
-                            <Field>
-                                <FieldLabel>Hạn hoàn thành <span class="text-danger">*</span></FieldLabel>
-                                <DateEdit TValue="DateTime" @bind="_input.DueDate">
-                                    <Feedback>
-                                        <ValidationError />
-                                    </Feedback>
-                                </DateEdit>
-                            </Field>
-                        </Validation>
-                    </Column>
-                    <Column ColumnSize="ColumnSize.Is6">
-                        <Field>
-                            <FieldLabel>Độ ưu tiên <span class="text-danger">*</span></FieldLabel>
-                            <Select TValue="string" @bind-SelectedValue="_input.Priority">
-                                @foreach (var p in Enum.GetValues<Priority>())
-                                {
-                                    <SelectItem Value="@p.ToString()">
-                                        @L[$"Enum:Priority:{p}"]
-                                    </SelectItem>
-                                }
-                            </Select>
-                        </Field>
-                    </Column>
-                </Row>
+                    <Field ColumnSize="ColumnSize.Is6">
+                        <FieldLabel>Due Date</FieldLabel>
+                        <DatePicker TValue="DateTime?" @bind-Value="_updateInput.DueDate" InputMode="DateInputMode.DateTime"
+                                    DefaultHour="12" DefaultMinute="00" />
+                    </Field>
 
-                @if (!string.IsNullOrEmpty(_errorMessage))
-                {
-                    <Alert Color="Color.Danger" Visible>
-                        @_errorMessage
-                    </Alert>
-                }
+                    <Field ColumnSize="ColumnSize.Is6">
+                        <FieldLabel>Priority</FieldLabel>
+                        <Select TValue="Priority?" @bind-Value="_updateInput.Priority">
+                            @foreach (var p in Enum.GetValues<Priority>())
+                            {
+                                <SelectItem Value="@((Priority?)p)">@L[$"Enum:Priority:{p}"]</SelectItem>
+                            }
+                        </Select>
+                    </Field>
 
-            </Validations>
+                    <Field ColumnSize="ColumnSize.Is6">
+                        <FieldLabel>Status</FieldLabel>
+                        <Select TValue="bool?" @bind-Value="_updateInput.IsDone">
+                            <SelectItem Value="@((bool?)false)">Unfinished</SelectItem>
+                            <SelectItem Value="@((bool?)true)">Finished</SelectItem>
+                        </Select>
+                    </Field>
+                </Fields>
+            }
+            else
+            {
+                <!-- Create form - Title & Description are required -->
+                <Fields>
+                    <Field ColumnSize="ColumnSize.Is12">
+                        <FieldLabel>Title <span class="text-danger">*</span></FieldLabel>
+                        <TextInput @bind-Value="_createInput.Title" Placeholder="Enter the title..." />
+                    </Field>
+
+                    <Field ColumnSize="ColumnSize.Is12">
+                        <FieldLabel>Description <span class="text-danger">*</span></FieldLabel>
+                        <TextInput @bind-Value="_createInput.Description" Placeholder="Enter the description" />
+                    </Field>
+
+                    <Field ColumnSize="ColumnSize.Is6">
+                        <FieldLabel>Due Date </FieldLabel>
+                        <DatePicker TValue="DateTime?" @bind-Value="_createInput.DueDate"
+                                    InputMode="DateInputMode.DateTime" />
+                    </Field>
+
+                    <Field ColumnSize="ColumnSize.Is6">
+                        <FieldLabel>Priority </FieldLabel>
+                        <Select TValue="Priority?" @bind-Value="_createInput.Priority">
+                            @foreach (var p in Enum.GetValues<Priority>())
+                            {
+                                <SelectItem Value="@((Priority?)p)">@L[$"Enum:Priority:{p}"]</SelectItem>
+                            }
+                        </Select>
+                    </Field>
+                </Fields>
+            }
         </ModalBody>
+
         <ModalFooter>
-            <Button Color="Color.Secondary" Clicked="Close">Hủy</Button>
+            <Button Color="Color.Secondary" Clicked="Close">@L["Cancel"]</Button>
             <Button Color="Color.Primary" Clicked="HandleSubmit" Loading="_isLoading">
-                @(_isEditMode ? "Cập nhật" : "Tạo mới")
+                @(_isEditMode ? @L["Update"] : @L["Create"])
             </Button>
         </ModalFooter>
     </ModalContent>
@@ -88,45 +111,48 @@
     [Parameter] public EventCallback OnSaved { get; set; }
 
     private Modal _modal = default!;
-    private Validations _validations = default!;
     private bool _isEditMode;
     private bool _isLoading;
     private string _errorMessage = "";
-    private Guid _editingId;
 
-    private CreateTodoItemDto _input = new();
+    private CreateTodoItemDto _createInput = new CreateTodoItemDto();
+    private UpdateTodoItemDto _updateInput = new UpdateTodoItemDto();
 
     public async Task OpenCreate()
     {
         _isEditMode = false;
-        _input = new CreateTodoItemDto
+        _createInput = new CreateTodoItemDto
         {
-            DueDate = DateTime.Today.AddDays(1),
+            DueDate = DateTime.UtcNow.AddDays(1),
             Priority = Priority.Medium
         };
+
         _errorMessage = "";
+
         await _modal.Show();
     }
+
+
 
     public async Task OpenEdit(TodoItemDto item)
     {
         _isEditMode = true;
-        _editingId = item.Id;
-        _input = new CreateTodoItemDto
+        _updateInput = new UpdateTodoItemDto
         {
+            Id = item.Id,
             Title = item.Title,
             Description = item.Description,
             DueDate = item.DueDate,
-            Priority = item.Priority
+            Priority = item.Priority,
+            IsDone = item.IsDone
         };
+
         _errorMessage = "";
         await _modal.Show();
     }
 
     private async Task HandleSubmit()
     {
-        if (!await _validations.ValidateAll()) return;
-
         _isLoading = true;
         _errorMessage = "";
 
@@ -134,31 +160,30 @@
         {
             if (_isEditMode)
             {
-                await TodoItemAppService.UpdateAsync(new UpdateTodoItemDto
-                {
-                    Id = _editingId,
-                    Title = _input.Title,
-                    Description = _input.Description,
-                    DueDate = _input.DueDate,
-                    Priority = _input.Priority
-                });
+                await TodoItemAppService.UpdateAsync(_updateInput);
+                await UiNotificationService.Success(L["TaskWasUpdatedSuccessfully"]);
             }
             else
             {
-                await TodoItemAppService.CreateAsync(_input);
+                await TodoItemAppService.CreateAsync(_createInput);
+                await UiNotificationService.Success(L["TaskWasCreatedSuccessfully"]);
             }
 
             await _modal.Hide();
-            await NotificationService.Success(_isEditMode ? "Cập nhật thành công!" : "Tạo task thành công!");
+
             await OnSaved.InvokeAsync();
+        }
+        catch (AbpValidationException ex)
+        {
+            _errorMessage = string.Join(separator: ", ", ex.ValidationErrors.Select(e => e.ErrorMessage));
         }
         catch (BusinessException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = L[ex.Message];
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Có lỗi xảy ra: {ex.Message}";
+            _errorMessage = $"Error happen: {L[ex.Message]}";
         }
         finally
         {

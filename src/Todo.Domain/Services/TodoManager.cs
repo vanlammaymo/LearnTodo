@@ -31,7 +31,7 @@ public class TodoManager : DomainService, ITodoManager
         var existTodoItem = await _todoItemRepository.FirstOrDefaultAsync(x => x.Title == title && x.CreatorId == currentUserId);
         if (existTodoItem != null)
         {
-            throw new BusinessException(code: TodoErrorCodes.TodoTitleAlreadyExists);
+            throw new BusinessException(TodoErrorCodes.TodoTitleAlreadyExists, TodoErrorCodes.TodoTitleAlreadyExists);
         }
         TodoItem newTodoItem = new TodoItem(
             id: _guidGenerator.Create(),
@@ -49,7 +49,8 @@ public class TodoManager : DomainService, ITodoManager
         string? title,
         string? description,
         DateTime? dueDate,
-        Priority? priority)
+        Priority? priority,
+        bool? isDone)
     {
         // Check if another item already matches the  title
         if (title is not null)
@@ -60,7 +61,7 @@ public class TodoManager : DomainService, ITodoManager
 
             if (todoItem != null)
             {
-                throw new BusinessException(code: TodoErrorCodes.TodoTitleAlreadyExists);
+                throw new BusinessException(TodoErrorCodes.TodoTitleAlreadyExists, TodoErrorCodes.TodoTitleAlreadyExists);
             }
         }
 
@@ -68,7 +69,8 @@ public class TodoManager : DomainService, ITodoManager
             title,
             description,
             dueDate.HasValue ? Clock.Normalize(dueDate.Value) : null,
-            priority.HasValue ? priority.Value : null
+            priority ?? null,
+            isDone ?? null
         );
     }
 }
