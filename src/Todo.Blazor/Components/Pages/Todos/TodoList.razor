@@ -34,11 +34,11 @@
     </CardHeader>
     <CardBody>
         <Row Class="mb-3">
-            <Column ColumnSize="ColumnSize.Is4">
-                <TextInput @bind-Value="@_filter.FilterText" Placeholder="Find by string.." @bind-Value:after="OnFilterChanged" />
+            <Column ColumnSize="ColumnSize.Is2">
+                <TextInput @bind-Value="@_filter.FilterText" Placeholder="Find by string.." @bind-Value:after="LoadData" />
             </Column>
-            <Column ColumnSize="ColumnSize.Is3">
-                <Select TValue="Priority?" @bind-Value="_filter.Priority" @bind-Value:after="OnFilterChanged" >
+            <Column ColumnSize="ColumnSize.Is2">
+                <Select TValue="Priority?" @bind-Value="_filter.Priority" @bind-Value:after="LoadData" >
                     <SelectItem Value="@((Priority?)null)"> -- All -- </SelectItem>
                     @foreach (var p in Enum.GetValues<Priority>())
                     {
@@ -48,13 +48,32 @@
                     }
                 </Select>
             </Column>
-            <Column ColumnSize="ColumnSize.Is3">
-                <Select TValue="bool?" @bind-Value="_filter.IsDone" @bind-Value:after="OnFilterChanged" >
+            <Column ColumnSize="ColumnSize.Is2">
+                <Select TValue="bool?" @bind-Value="_filter.IsDone" @bind-Value:after="LoadData" >
                     <SelectItem Value="@((bool?)null)">-- All --</SelectItem>
                     <SelectItem Value="@((bool?)false)">Unfinished</SelectItem>
                     <SelectItem Value="@((bool?)true)">Finished</SelectItem>
                 </Select>
             </Column>
+
+            <Column ColumnSize="ColumnSize.Is2">
+                <DatePicker TValue="DateTime?" 
+                            Value="_filter.DueDateFrom"
+                            InputMode="DateInputMode.DateTime"
+                            TimeAs24hr="true"
+                            ValueChanged="OnDueDateFromChanged"
+                            Placeholder="@L["DueDateFrom"]" />
+            </Column>
+
+            <Column ColumnSize="ColumnSize.Is2">
+                <DatePicker TValue="DateTime?" 
+                            Value="_filter.DueDateTo"
+                            InputMode="DateInputMode.DateTime"
+                            TimeAs24hr="true"
+                            ValueChanged="OnDueDateToChanged"
+                            Placeholder="@L["DueDateTo"]" />
+            </Column>
+            
             <Column ColumnSize="ColumnSize.Is2">
                 <Button
                     Color="Color.Secondary"
@@ -211,22 +230,19 @@
 
     private async Task ResetFilter()
     {
-        _filter = new GetTodoListDto()
-        {
-            FilterText = null,
-            IsDone = null,
-            Priority = null,
-            DueDateFrom = null,
-            DueDateTo = null,
-            Sorting = "DueDate asc"
-        };
+        _filter.FilterText = null;
+        _filter.IsDone = null;
+        _filter.Priority = null;
+        _filter.DueDateFrom = null;
+        _filter.DueDateTo = null;
+        _filter.Sorting = "DueDate asc";
 
         await LoadData();
     }
 
-    private void OpenCreate() => _modal.OpenCreate();
+    private Task OpenCreate() => _modal.OpenCreate();
 
-    private void OpenEdit(TodoItemDto item) => _modal.OpenEdit(item);
+    private Task OpenEdit(TodoItemDto item) => _modal.OpenEdit(item);
 
     private async Task MarkAsDone(Guid id)
     {
@@ -264,8 +280,31 @@
         _ => Color.Secondary
     };
 
-    private async Task OnFilterChanged()
+    private Task OnDueDateFromChanged(DateTime? value)
     {
-        await LoadData();
+        _filter.DueDateFrom = value;
+    
+        _ = Task.Run(async () => await InvokeAsync(async () =>
+        {
+            await Task.Yield();
+            await LoadData();
+            StateHasChanged();
+        }));
+        
+        return Task.CompletedTask;
+    }
+
+    private Task OnDueDateToChanged(DateTime? value)
+    {
+        _filter.DueDateTo = value;
+
+        _ = Task.Run(async () => await InvokeAsync(async () =>
+        {
+            await Task.Yield();
+            await LoadData();
+            StateHasChanged();
+        }));
+        
+        return Task.CompletedTask;
     }
 }
